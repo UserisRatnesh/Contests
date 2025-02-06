@@ -45,7 +45,9 @@ void _print(lld t) { cerr << t; }
 void _print(double t) { cerr << t; }
 void _print(ull t) { cerr << t; }
 
-void helper(vector<ll> &vec) {
+// TC: O(n^2)
+// NOTE: Giving TLE
+void find_beauty(vector<ll> &vec) {
 
   ll ans = vec[0];
   ll n = vec.size();
@@ -84,7 +86,56 @@ void solve() {
 
     ll index = p.first - 1;
     vec[index] = p.second;
-    helper(vec);
+    find_beauty(vec);
+  }
+}
+
+// NOTE: optimized
+// TC: O(n + q*log(mapsize))
+void solveBetter() {
+  ll n;
+  cin >> n;
+  // NOTE: GoodIndex is that index that affects the and
+  // like and waala jab zero rhega then result -> 0 for sure
+  // or waala one rhega then result -> 1 for sure
+
+  // (index, value)
+  map<ll, ll> goodIndex;
+  for (ll i = 1; i <= n; i++) {
+    ll val;
+    cin >> val;
+
+    if (i % 2 == val) {
+      goodIndex[i] = val;
+    }
+  }
+
+  ll q;
+  cin >> q;
+
+  ll ans = 0;
+  while (q--) {
+    ll index, value;
+    cin >> index >> value;
+
+    if (goodIndex.find(index) != goodIndex.end() && index % 2 != value) {
+      // if present in goodindex but after qry not a goodindex anymore then
+      // update the goodindex
+      goodIndex.erase(index);
+    }
+
+    // if good index then add to goodindex
+    if (index % 2 == value) {
+      goodIndex[index] = value;
+    }
+
+    if (!goodIndex.empty()) {
+      auto last = prev(goodIndex.end());
+      ans = last->second;
+      cout << ans << endl;
+    } else {
+      cout << 0 << endl;
+    }
   }
 }
 
@@ -96,6 +147,6 @@ int main() {
   ll t;
   cin >> t;
   while (t--) {
-    solve();
+    solveBetter();
   }
 }
