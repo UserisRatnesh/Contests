@@ -3,5 +3,5 @@
 *.[Oo][Uu][Tt]
 *.bin
 *.exe
-
+*.txt
 *.DS_Store
