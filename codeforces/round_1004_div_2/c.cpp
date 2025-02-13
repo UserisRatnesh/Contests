@@ -45,44 +45,83 @@ void _print(lld t) { cerr << t; }
 void _print(double t) { cerr << t; }
 void _print(ull t) { cerr << t; }
 
+// NOTE: Brute force kind of approach
+bool helper(ll sum) {
+  while (sum) {
+    if (sum % 10 == 7) {
+      return true;
+    }
+    sum = sum / 10;
+  }
+  return false;
+}
+
 void solve() {
   ll n;
   cin >> n;
-  vector<ll> freq(n + 1, 0);
-  for (ll i = 0; i < n; i++) {
-    ll val;
-    cin >> val;
-    freq[val]++;
+
+  ll ans = 10;
+  for (ll i = 9; i <= 10e9; i = i * 10 + 9) {
+    ll sum = n;
+
+    ll count = 0;
+
+    // Keep adding i till it does not have 7 as one of the digit
+    while (!helper(sum)) {
+      sum += i;
+      count++;
+    }
+
+    ans = min(ans, count);
   }
 
-  for (ll i = 1; i < n; i++) {
-    if (freq[i] == 1) {
-      cout << "NO" << nline;
+  cout << ans << nline;
+}
+
+// NOTE: Mathematical deduction approach
+void solveBetter() {
+  ll n;
+  cin >> n;
+
+  // If already has a seven as digit
+  ll tempN = n;
+  while (tempN) {
+    if (tempN % 10 == 7) {
+      cout << 0 << endl;
       return;
-    } else if (freq[i] > 0) {
-      ll temp = freq[i];
-      freq[i] = 2;
-      freq[i + 1] += temp - 2;
+    }
+    tempN /= 10;
+  }
+
+  ll ans = 9;
+  // Maximum possible ans can be 9
+  for (ll k = 1; k <= 9; k++) {
+    ll num = n - k;
+
+    ll tempAns = 7;
+    while (num) {
+      ll digit = num % 10;
+      tempAns = min(tempAns, (7 - digit + 10) % 10);
+      num /= 10;
+    }
+    if (tempAns <= k) {
+      ans = min(ans, k);
     }
   }
 
-  for (auto it : freq) {
-    if (it % 2 == 1) {
-      cout << "NO" << nline;
-      return;
-    }
-  }
-  cout << "YES" << nline;
+  cout << ans << endl;
 }
 
 int main() {
 #ifndef ONLINE_JUDGE
   freopen("Error.txt", "w", stderr);
+  freopen("input.txt", "r", stdin);
+  freopen("output.txt", "w", stdout);
 #endif
   fastio();
   ll t;
   cin >> t;
   while (t--) {
-    solve();
+    solveBetter();
   }
 }
