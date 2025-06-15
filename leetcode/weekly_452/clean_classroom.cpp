@@ -1,4 +1,3 @@
-#include <climits>
 #ifndef ONLINE_JUDGE
 #include "/usr/local/include/bits/stdc++.h"
 #else
@@ -106,37 +105,80 @@ int minMoves(vector<string> &classroom, int energy) {
   int rows = classroom.size();
   int cols = classroom[0].size();
 
-  int countL = 0;
-  int sx = -1;
-  int sy = -1;
+  pair<int, int> start;
+  vector<pair<int, int>> litter;
+  map<pair<int, int>, int> lit_id;
+  int l = 0;
 
   for (int i = 0; i < rows; i++) {
     for (int j = 0; j < cols; j++) {
       if (classroom[i][j] == 'S') {
-        sx = i;
-        sy = j;
+        start = {i, j};
       }
       if (classroom[i][j] == 'L') {
-        countL++;
+        litter.push_back({i, j});
+        lit_id[{i, j}] = l;
+        l++;
       }
     }
   }
 
-  vector<vector<int>> steps(rows, vector<int>(cols, INT_MAX));
-  steps[sx][sy] = 0;
+  // Maintaining the states
+  bool vis[20][20][1 << 10][51];
+  memset(vis, false, sizeof(vis));
 
-  priority_queue<vector<int>, vector<vector<int>>,
-                 greater<vector<int>>>
-      pq; // { steps, energy, cntL, x, y}
+  struct State {
+    int x, y, mask, e, d;
+  };
 
-  while (!pq.empty()) {
-    auto it = pq.top();
-    int steps = it[0];
-    int currEnergy = it[1];
-    int lErased = it[2];
-    int x = it[3];
-    int y = it[4];
+  queue<State> que;
+  que.push({start.first, start.second, 0, energy, 0});
+  vector<vector<int>> dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+  vis[start.first][start.second][0][energy] = true;
+
+  while (!que.empty()) {
+    State s = que.front();
+    que.pop();
+
+    // all litter collected
+    if (s.mask == (1 << l) - 1) {
+      return s.d;
+    }
+
+    // if out of energy
+    if (s.e == 0) {
+      continue;
+    }
+
+    for (auto &dir : dirs) {
+      int newX = s.x + dir[0];
+      int newY = s.y + dir[1];
+
+      if (newX < 0 || newX >= rows || newY < 0 || newY >= cols ||
+          classroom[newX][newY] == 'X') {
+        continue;
+      }
+
+      int newE = s.e - 1;
+
+      if (classroom[newX][newY] == 'R') {
+        newE = energy;
+      }
+
+      int newMask = s.mask;
+
+      if (classroom[newX][newY] == 'L') {
+        newMask |= (1 << lit_id[{newX, newY}]);
+      }
+
+      if (!vis[newX][newY][newMask][newE]) {
+        vis[newX][newY][newMask][newE] = true;
+        que.push({newX, newY, newMask, newE, s.d + 1});
+      }
+    }
   }
+
+  return -1;
 }
 
 int main() {
