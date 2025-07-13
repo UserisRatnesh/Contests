@@ -213,7 +213,4 @@ int main() {
   freopen("input.txt", "r", stdin);
 #endif
   ratnesh();
-
-  char ans = processStr("%lnwu*swza", 0);
-  cout << ans << nl;
 }

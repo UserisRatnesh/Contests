@@ -165,6 +165,91 @@ int maxLen(int n, vector<vector<int>> &edges, string label) {
   return maxLen;
 }
 
+// NOTE :optimal
+
+int maxLen_optimal(int n, vector<vector<int>> &edges, string label) {
+  vector<vector<int>> adj(n);
+  for (auto &e : edges) {
+    int u = e[0];
+    int v = e[1];
+    adj[u].push_back(v);
+    adj[v].push_back(u);
+  }
+
+  // HACK : dp[mask][i][j] => Ye represent kar rha hai ki I se J jaane me kaun
+  // kaun sa bit set hai in mask,jo bit set hai wo represent kar rha hai ki ye
+  // ye node liya gya hai
+  // dp[mask][i][j] = 1 => Means ye sab leke jo path ban rha hai I to J wo ek
+  // valid palindrome hai
+  int dp[(1 << n)][n][n];
+
+  // To set the value at dp to zero, initially some garbage value
+  memset(dp, 0, sizeof(dp));
+
+  for (int i = 0; i < n; i++) {
+    dp[(1 << i)][i][i] = 1;
+  }
+
+  for (int i = 0; i < n; i++) {
+    for (auto &j : adj[i]) {
+      if (label[i] != label[j]) {
+        continue;
+      }
+      dp[((1 << i) | (1 << j))][i][j] = 1;
+    }
+  }
+
+  int ans = 1;
+  for (int mask = 1; mask < (1 << n); mask++) {
+    for (int i = 0; i < n; i++) {
+
+      // Agar ith node nahi hai path me to ignore this
+      if (!(mask & (1 << i))) {
+        continue;
+      }
+      for (int j = 0; j < n; j++) {
+
+        // Agar jth node nahi hai path me to ignore this
+        if (!(mask & (1 << j))) {
+          continue;
+        }
+
+        // Agar ye valid palindrome nahi bana rha hai to ignore it
+        if (!dp[mask][i][j]) {
+          continue;
+        }
+
+        // Maintain maxLength of valid palindrome by counting how many nodes are
+        // there in it's path
+        ans = max(ans, __builtin_popcount(mask));
+
+        // Choose those ii and jj who are not in mask
+        // And have equal labels then can create valid palindrome
+        for (auto &ii : adj[i]) {
+          if (mask & (1 << ii)) {
+            continue;
+          }
+          for (auto &jj : adj[j]) {
+            if (mask & (1 << jj)) {
+              continue;
+            }
+            if (ii == jj) {
+              continue;
+            }
+            if (label[ii] != label[jj]) {
+              continue;
+            }
+
+            dp[(mask | (1 << ii) | (1 << jj))][ii][jj] = 1;
+          }
+        }
+      }
+    }
+  }
+
+  return ans;
+}
+
 int main() {
 #ifndef ONLINE_JUDGE
   freopen("Error.txt", "w", stderr);
